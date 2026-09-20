@@ -1,0 +1,25 @@
+import os,sys
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+from _common import ROOT, DIST, SP, OUT, serve
+exec(open('test8.py').read().split("errors=[]")[0].replace('8774','8775'))
+errors=[]
+with sync_playwright() as p:
+    b=p.chromium.launch(); ctx=b.new_context(viewport={'width':390,'height':844},device_scale_factor=2,service_workers='block')
+    pg=ctx.new_page(); pg.on('pageerror',lambda e: errors.append(str(e)))
+    pg.goto('http://localhost:8775/index.html')
+    pg.evaluate("d=>{localStorage.clear();localStorage.setItem('kantong-bersama-v1',JSON.stringify(d));localStorage.setItem('cmoneytracker-tips-seen-v39','1');localStorage.setItem('cmoneytracker-whatsnew-v43','1')}",db)
+    pg.reload(); pg.wait_for_timeout(1500)
+    st=pg.evaluate("(()=>{const d=JSON.parse(localStorage.getItem('kantong-bersama-v1'));const m=new Date().toISOString().slice(0,7);const x=d.expenses.filter(e=>e.date.startsWith(m)&&e.type==='daily');return {jajanTypes:[...new Set(d.expenses.filter(e=>e.category==='Jajan').map(e=>e.type))],daily:x.reduce((s,e)=>s+e.amount,0),day:new Date().getDate()}})()")
+    print(st,'expected avg',st['daily']/st['day'])
+    print('tile:',pg.inner_text('#tileAvg').replace('\n',' '), '|', pg.eval_on_selector('#tileAvg','e=>e.previousElementSibling.textContent'))
+    pg.fill('#smartQuickInput','jajan 20rb'); pg.press('#smartQuickInput','Enter'); pg.wait_for_timeout(300)
+    print('jajan type:',pg.evaluate("(()=>{const d=JSON.parse(localStorage.getItem('kantong-bersama-v1'));return d.expenses[d.expenses.length-1].type})()"))
+    pg.click('#fabAdd'); pg.wait_for_timeout(300)
+    print('harian cats:',pg.inner_text('#sheetCats').replace('\n',' '))
+    pg.click('[data-kind="recurring"]'); print('berkala cats:',pg.inner_text('#sheetCats').replace('\n',' '))
+    pg.click('#sheetClose'); pg.click('[data-nav="report"]'); pg.wait_for_timeout(300)
+    print('report avg:',pg.inner_text('#sumAvgDay'),pg.inner_text('#sumAvgSub'),'| harian',pg.inner_text('#sumDaily'),'berkala',pg.inner_text('#sumRecurring'))
+    pg.screenshot(path=OUT+'i-report.png')
+    b.close()
+srv.terminate()
+print('ERRORS:',errors)

@@ -1,0 +1,22 @@
+{
+  "name": "cmoneytracker",
+  "version": "43.0.0",
+  "private": true,
+  "description": "CMoney Tracker — pencatat keuangan pribadi (PWA, data lokal, tanpa server)",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs",
+    "test": "node scripts/test.mjs",
+    "lint": "eslint src scripts",
+    "format": "prettier --write \"**/*.{json,md,yml}\"",
+    "perf": "npm run build && cd tests && python3 perf.py",
+    "release": "node scripts/version.mjs"
+  },
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0",
+    "prettier": "^3.3.3"
+  }
+}
